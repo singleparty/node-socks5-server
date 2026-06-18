@@ -1,7 +1,7 @@
 'use strict';
 
 const net = require('net');
-const { Resolver } = require('node:dns').promises;
+const { Resolver, lookup } = require('node:dns').promises;
 const ipv4 = require('./utils/ipv4');
 const ipv6 = require('./utils/ipv6');
 const buf = require('./utils/buf');
@@ -153,6 +153,30 @@ class SocketHandler {
     this.socket.write(Buffer.from(data));
   }
 
+  async resolveDomain(domain) {
+    if (net.isIP(domain)) {
+      return domain;
+    }
+
+    if (!this.dns) {
+      const result = await lookup(domain);
+      return result.address;
+    }
+
+    const dnsResolver = new Resolver();
+    if (typeof this.dns === 'string') {
+      dnsResolver.setServers([this.dns]);
+    } else if (typeof this.dns === 'object') {
+      dnsResolver.setServers(this.dns);
+    }
+    if (this.localAddress) {
+      dnsResolver.setLocalAddress(this.localAddress);
+    }
+
+    const ips = await dnsResolver.resolve4(domain);
+    return ips[0];
+  }
+
   async request() {
     // Requests
 
@@ -185,26 +209,11 @@ class SocketHandler {
         const domainLen = data[4];
         const domain = data.toString('ascii', 5, 5 + domainLen);
         try {
-          const dnsResolver = new Resolver();
-          if (this.dns && typeof this.dns === 'string') {
-            dnsResolver.setServers([this.dns]);
-          } else if (this.dns && typeof this.dns === 'object') {
-            dnsResolver.setServers(this.dns);
-          }
-          if (this.localAddress) {
-            dnsResolver.setLocalAddress(this.localAddress);
-          }
-          const ips = await dnsResolver.resolve4(domain);
-          dstHost = ips[0];
+          dstHost = await this.resolveDomain(domain);
         } catch (err) {
-          //fix
-          if (net.isIP(domain)) {
-            dstHost = domain;
-          } else {
-            this.logger.error(err);
-            this.reply(0x04);
-            return this.socket.end();
-          }
+          this.logger.error(err);
+          this.reply(0x04);
+          return this.socket.end();
         }
         dstPort = (data[5 + domainLen] << 8) | data[5 + domainLen + 1];
         break;
