@@ -7,8 +7,8 @@
     "test": "node test/ipv6.js"
   },
   "bin": {
-    "ciiri-node-socks5": "./node-socks5.js",
-    "ciiri-node-portfwd": "./portfwd.js"
+    "ciiri-node-socks5": "node-socks5.js",
+    "ciiri-node-portfwd": "portfwd.js"
   },
   "author": "liqiang",
   "contributors": [
