@@ -1,13 +1,14 @@
 {
   "name": "@ciiri/node-socks5-server",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "SOCKS5 server for Node.js with system hosts-aware DNS lookup",
   "main": "index.js",
   "scripts": {
     "test": "node test/ipv6.js"
   },
   "bin": {
-    "ciiri-node-socks5": "./node-socks5.js"
+    "ciiri-node-socks5": "./node-socks5.js",
+    "ciiri-node-portfwd": "./portfwd.js"
   },
   "author": "liqiang",
   "contributors": [

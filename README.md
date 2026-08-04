@@ -28,9 +28,40 @@ npm i -g @ciiri/node-socks5-server
 
 ### Startup
 
+```bash
+ciiri-node-socks5
 ```
-node-socks5
+
+The SOCKS5 server listens on port `1080` by default. Use `--port` to change
+the listening port:
+
+```bash
+ciiri-node-socks5 --port 1081
 ```
+
+## TCP port forwarding
+
+`ciiri-node-portfwd` starts a TCP port forwarder. It listens on the local
+machine and forwards connections to the same port on the target host.
+
+```bash
+ciiri-node-portfwd --ip 192.168.64.2 --port 5174
+```
+
+This command listens on `0.0.0.0:5174` and forwards traffic to
+`192.168.64.2:5174`. The default target is `192.168.64.2:5174`, so both
+options are optional when using those defaults.
+
+Available options:
+
+- `--ip <address>`: target host or IP address
+- `--port <port>` or `-p <port>`: local and target TCP port, from `1` to `65535`
+- `-h` or `--help`: show command help
+
+The forwarder logs startup, accepted connections, target connection status,
+errors, connection closure, and shutdown events to the console.
+
+To stop it, press `Ctrl+C`.
 
 ## Usage for package
 
