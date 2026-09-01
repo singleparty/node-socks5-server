@@ -1,91 +1,90 @@
 # @ciiri/node-socks5-server
 
-Provides the `socks5` package that implements a [SOCKS5 server](http://en.wikipedia.org/wiki/SOCKS).
-SOCKS (Secure Sockets) is used to route traffic between a client and server through
-an intermediate proxy layer. This can be used to bypass firewalls or NATs.
+提供 `socks5` 包，用于实现 [SOCKS5 服务器](http://en.wikipedia.org/wiki/SOCKS)。
+SOCKS（Secure Sockets）用于通过中间代理层在客户端和服务器之间转发流量。
+它可用于绕过防火墙或 NAT。
 
-This fork defaults to system DNS lookup for domain requests, so host mappings from
-`/etc/hosts` or the operating system resolver can be used by the SOCKS5 proxy.
-When a `dns` option is provided, the server still uses that explicit DNS server.
+这个分支默认对域名请求使用系统 DNS 查询，因此 SOCKS5 代理可以使用
+`/etc/hosts` 或操作系统解析器中的主机映射。
+当提供 `dns` 选项时，服务器仍会使用指定的 DNS 服务。
 
-## Features
+## 功能
 
-- "No Auth" mode
-- User/Password authentication
-- Support for the CONNECT command
-- Support UDP
-- set localAddress interface
-- use specific DNS server
-- Use system hosts-aware DNS lookup by default
+- 无认证模式
+- 用户名/密码认证
+- 支持 `CONNECT` 命令
+- 支持 UDP
+- 设置 `localAddress` 接口
+- 使用指定的 DNS 服务器
+- 默认使用支持系统 hosts 的 DNS 查询
 
-## Usage for command
+## 命令行使用
 
-### Install global
+### 全局安装
 
-```
+```bash
 npm i -g @ciiri/node-socks5-server
 ```
 
-### Startup
+### 启动
 
 ```bash
 ciiri-node-socks5
 ```
 
-The SOCKS5 server listens on port `1080` by default. Use `--port` to change
-the listening port:
+SOCKS5 服务器默认监听 `1080` 端口。可使用 `--port` 修改监听端口：
 
 ```bash
 ciiri-node-socks5 --port 1081
 ```
 
-## TCP port forwarding
+## TCP 端口转发
 
-`ciiri-node-portfwd` starts a TCP port forwarder. It listens on the local
-machine and forwards connections to the same port on the target host.
+`ciiri-node-portfwd` 会启动一个 TCP 端口转发器。它监听本机端口，并将连接转发到目标主机的同一端口。
 
 ```bash
 ciiri-node-portfwd --ip 192.168.64.2 --port 5174
 ```
 
-This command listens on `0.0.0.0:5174` and forwards traffic to
-`192.168.64.2:5174`. The default target is `192.168.64.2:5174`, so both
-options are optional when using those defaults.
+该命令会监听 `0.0.0.0:5174`，并将流量转发到 `192.168.64.2:5174`。
+默认目标也是 `192.168.64.2:5174`，因此在使用默认值时这两个参数都可以省略。
 
-Available options:
+可用选项：
 
-- `--ip <address>`: target host or IP address
-- `--port <port>` or `-p <port>`: local and target TCP port, from `1` to `65535`
-- `-h` or `--help`: show command help
+- `--ip <address>`：目标主机或 IP 地址
+- `--port <port>` 或 `-p <port>`：本地和目标 TCP 端口，范围 `1` 到 `65535`
+- `-h` 或 `--help`：显示命令帮助
 
-The forwarder logs startup, accepted connections, target connection status,
-errors, connection closure, and shutdown events to the console.
+转发器会在控制台输出启动、接受连接、目标连接状态、错误、连接关闭和关闭服务等事件。
 
-To stop it, press `Ctrl+C`.
+停止时，按 `Ctrl+C`。
 
-## Usage for package
+## macOS 应用循环重启
 
-### Install in your project
+`ciiri-node-loop-restart-app` 仅适用于 macOS。它会按照指定间隔退出并重新打开指定应用。
 
+```bash
+ciiri-node-loop-restart-app --app "Safari" --interval 30m
 ```
+
+可用选项：
+
+- `--app <name>`：要重启的应用名称
+- `--interval <duration>`：重启间隔，支持 `ms`、`s`、`m`、`h`，例如 `5000`、`30s`、`5m`、`1h`
+- `--restart-delay <ms>`：退出后等待多久再重新打开，默认 `2000`
+- `-h` 或 `--help`：显示命令帮助
+
+## 作为包使用
+
+### 在项目中安装
+
+```bash
 npm i @ciiri/node-socks5-server
 ```
 
-### Require
+### 引入
 
-Below is a simple example of usage. Go examples folder see more.
-
-```javascript
-const socks5 = require('@ciiri/node-socks5-server');
-
-const server = socks5.createServer();
-server.listen(1080);
-```
-
-### DNS lookup
-
-By default, domain requests use system DNS lookup. This allows the proxy to resolve
-domains from `/etc/hosts`:
+下面是一个简单的使用示例。更多示例请查看 `examples` 目录。
 
 ```javascript
 const socks5 = require('@ciiri/node-socks5-server');
@@ -94,7 +93,19 @@ const server = socks5.createServer();
 server.listen(1080);
 ```
 
-To force a specific DNS server, pass the `dns` option:
+### DNS 查询
+
+默认情况下，域名请求会使用系统 DNS 查询。这使得代理可以解析
+`/etc/hosts` 中的域名：
+
+```javascript
+const socks5 = require('@ciiri/node-socks5-server');
+
+const server = socks5.createServer();
+server.listen(1080);
+```
+
+如果要强制使用指定的 DNS 服务器，可以传入 `dns` 选项：
 
 ```javascript
 const socks5 = require('@ciiri/node-socks5-server');
@@ -106,7 +117,7 @@ const server = socks5.createServer({
 server.listen(1080);
 ```
 
-## Test with curl
+## 使用 curl 测试
 
 ```bash
 curl http://www.baidu.com/ --socks5 localhost:1080
@@ -118,7 +129,7 @@ curl http://www.baidu.com/ --socks5 user:password@localhost:1080
 
 - bind
 
-## Thanks
+## 致谢
 
 - [socks](https://zh.wikipedia.org/wiki/SOCKS)
 - [rfc1928](https://tools.ietf.org/html/rfc1928)
